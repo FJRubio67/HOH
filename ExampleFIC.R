@@ -19,7 +19,8 @@ library(knitr)
 
 #source("/Users/FJRubio/Dropbox/ODESurv/HO/codes/routines/routinesHO.R")
 #source("C:/Users/Javier/Dropbox/ODESurv/HO/codes/routines/routinesHO.R")
-source("/Users/javierrubio/Dropbox/ODESurv/HO/codes/routines/routinesHO.R")
+#source("/Users/javierrubio/Dropbox/ODESurv/HO/codes/routines/routinesHO.R")
+source("routinesHO.R")
 
 ## ----eval=FALSE-------------------------------------------------------------------------------------------
 ## source("routines.R")
@@ -72,12 +73,12 @@ survtimes <- df$time
 #--------------------------------------------------------------------------------------------------
 
 # Initial point
-initHO <- c(0,0,0)
+initHO <- c(0.5,0,0)
 
 # Initial conditions
 
-St <- 1-0.05/12
-Stt <- 1 - 2*0.05/12
+St <- 0.999
+Stt <- 1 - 0.05/11
 S0 <- 1
 dt <- 1/12
 
@@ -96,7 +97,9 @@ h00 <- h0s
 r00 <- h0p
 
 
-nlminb(c(.5,0.1,0.1), log_likHOFICS, control = list(iter.max = 1000))
+nlminb(initHO, log_likHOFICS, control = list(iter.max = 1000))
+
+optim(initHO, log_likHOFICS, control = list(maxit = 1000))
 
 ## ---------------------------------------------------------------------------------------------------------
 #==================================================================================================
