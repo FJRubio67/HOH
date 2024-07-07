@@ -335,54 +335,54 @@ plotSHOhaz <- function(par,
 
 
 # Support function on the log scale
-SupportHO <- function(par) {
-  # Parameters
-  eta <- exp(par[1])
-  w0 <- exp(par[2])
-  hb <- exp(par[3])
-  
-  h0 <- exp(par[4])
-  r0 <- par[5]
-  
-  # Additional required parameters
-  w1 <- w0 * sqrt(abs(eta ^ 2 - 1))
-  mu <- w1 / (w0 * eta)
-  phi <- rep2ap(eta, w0, hb, h0, r0)$phi
-  
-  # HO Hazard function with parameters given by par
-  temph <- Vectorize(function(t)
-    hHO(t, eta, w0, hb, h0, r0))
-  
-  if (eta < 1) {
-    ts <- (atan(mu) - phi + seq(0, 1, by = 1) * pi) / w1
-    hs <- temph(ts)
-    out <- ifelse(any(hs <= 0), FALSE, TRUE)
-  }
-  
-  if (eta > 1) {
-    if (r0 >= 0)
-      out <- TRUE
-    if (r0 < 0) {
-      test <- (h0 - hb - a) / (h0 - hb + a)
-      if (test <= 0)
-        out = FALSE
-      if (test > 0) {
-        t_hat <- 0.5 * w0 * eta * log(test) / mu
-        
-        hs <- temph(c(0.5 * t_hat, t_hat))
-        
-        out <- ifelse(any(hs <= 0), FALSE, TRUE)
-      }
-    }
-    
-  }
-  if (eta == 1){
-    out <- FALSE
-  }
-  
-  return(out)
-  
-}
+# SupportHO <- function(par) {
+#   # Parameters
+#   eta <- exp(par[1])
+#   w0 <- exp(par[2])
+#   hb <- exp(par[3])
+#   
+#   h0 <- exp(par[4])
+#   r0 <- par[5]
+#   
+#   # Additional required parameters
+#   w1 <- w0 * sqrt(abs(eta ^ 2 - 1))
+#   mu <- w1 / (w0 * eta)
+#   phi <- rep2ap(eta, w0, hb, h0, r0)$phi
+#   
+#   # HO Hazard function with parameters given by par
+#   temph <- Vectorize(function(t)
+#     hHO(t, eta, w0, hb, h0, r0))
+#   
+#   if (eta < 1) {
+#     ts <- (atan(mu) - phi + seq(0, 1, by = 1) * pi) / w1
+#     hs <- temph(ts)
+#     out <- ifelse(any(hs <= 0), FALSE, TRUE)
+#   }
+#   
+#   if (eta > 1) {
+#     if (r0 >= 0)
+#       out <- TRUE
+#     if (r0 < 0) {
+#       test <- (h0 - hb - a) / (h0 - hb + a)
+#       if (test <= 0)
+#         out = FALSE
+#       if (test > 0) {
+#         t_hat <- 0.5 * w0 * eta * log(test) / mu
+#         
+#         hs <- temph(c(0.5 * t_hat, t_hat))
+#         
+#         out <- ifelse(any(hs <= 0), FALSE, TRUE)
+#       }
+#     }
+#     
+#   }
+#   if (eta == 1){
+#     out <- FALSE
+#   }
+#   
+#   return(out)
+#   
+# }
 
 
 # Support function on the log scale
@@ -416,14 +416,14 @@ SupportHOFICS <- function(par) {
       out <- TRUE
     }
     if (r0 < 0) {
-      test <- (h0 - hb - a) / (h0 - hb + a)
+      test <- ((h0 - hb - a) * (w1+w0*eta)) / ((h0 - hb + a)*(w1-w0*eta))
       if (test <= 0){
         out = FALSE
       }
       if (test > 0) {
-        t_hat <- 0.5 * w0 * eta * log(test) / mu
+        t_hat <- 0.5 * log(test) / w1
         
-        hs <- temph(c(0.5 * t_hat, t_hat))
+        hs <- temph(seq(1,10)*t_hat/10)
         
         out <- ifelse(any(hs <= 0), FALSE, TRUE)
       }
