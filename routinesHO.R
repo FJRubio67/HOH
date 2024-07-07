@@ -412,19 +412,29 @@ SupportHOFICS <- function(par) {
   }
   
   if (eta > 1) {
+    mu <- w1/(w0*eta)
+    a <- (h0-hb)/mu + r0/w1
+    test <- ((h0 - hb - a) * (w1+w0*eta)) / ((h0 - hb + a)*(w1-w0*eta))
+    
     if (r0 >= 0){
-      out <- TRUE
-    }
-    if (r0 < 0) {
-      test <- ((h0 - hb - a) * (w1+w0*eta)) / ((h0 - hb + a)*(w1-w0*eta))
       if (test <= 0){
         out = FALSE
       }
       if (test > 0) {
         t_hat <- 0.5 * log(test) / w1
-        
         hs <- temph(seq(1,10)*t_hat/10)
-        
+        out <- ifelse(any(hs <= 0), FALSE, TRUE)
+      }
+      
+    }
+    if (r0 < 0) {
+      if (test <= 0){
+        out = FALSE
+      }
+      
+      if (test > 0) {
+        t_hat <- 0.5 * log(test) / w1
+        hs <- temph(seq(1,10)*t_hat/10)
         out <- ifelse(any(hs <= 0), FALSE, TRUE)
       }
     }

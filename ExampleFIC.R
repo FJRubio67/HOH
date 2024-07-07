@@ -118,7 +118,7 @@ curve(temph,0,20, lwd = 2)
 # Random initial points
 X0HO <- function(x) { OPT$par + runif(3,-0.01,0.01) }
 
-NMC = 110000
+NMC = 15000
 
 # twalk for analytic solution
 set.seed(1234)
@@ -205,7 +205,7 @@ legend("bottomright", legend = c("HO", "BS"), lty = c(1,2),
 # Predictive HO survival 
 predSHO <- Vectorize(function(t){ 
   temp <- vector() 
-  for(i in 1:length(ind)) temp[i] <- exp(-chshoode( t,taup[i], w2p[i], hbp[i], Ap[i], phip[i]) )  
+  for(i in 1:length(ind)) temp[i] <- exp(-chHO( t,etap[i], w0p[i], hbp[i], h00, r00) )  
   return(mean(temp)) 
 }) 
 
@@ -215,7 +215,7 @@ SCIHO <- matrix(0, ncol = ntvec, nrow = length(ind))
 
 for(j in 1:length(ind)){ 
   for(k in 1:ntvec){ 
-    SCIHO[j,k ] <- exp(-chshoode( tvec[k],taup[j], w2p[j], hbp[j], Ap[j], phip[j])) 
+    SCIHO[j,k ] <- exp(-chHO( tvec[k],etap[j], w0p[j], hbp[j], h00, r00)) 
   } 
 }
 
