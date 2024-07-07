@@ -75,35 +75,37 @@ survtimes <- df$time
 
 # Initial conditions
 
-St <- 0.999
-Stt <- 0.998
+# Survival at time 0
 S0 <- 1
+# Survival at 1 month
+St <- 0.999
+# Survival at 2 months
+Stt <- 0.998
+# dt = 1 month
 dt <- 1/12
 
+# Approximation of the initial conditions
 Sp <- -(St-S0)/dt
-
-h0s <- Sp/St
-
-h0s
-
 Spp <- (Stt - 2*St + S0)/(dt^2)
-h0p <- h0s^2 - Spp/St
 
-h0p
-
-h00 <- h0s
-r00 <- h0p
-
+h00 <- Sp/St
+r00 <- h00^2 - Spp/St
 
 # Initial point
 initHO <- c(0.1,0,0)
 
-OPT <- optim(initHO, log_likHOFICS, control = list(maxit = 1000))
-OPT
+OPTHO <- optim(initHO, log_likHOFICS, control = list(maxit = 1000))
+OPTHO
 
-2*OPT$value + 2*length(OPT$par)
+MLEHO <- exp(OPTHO$par)
 
-temph <- Vectorize(function(t) hHO(t,exp(OPT$par[1]), exp(OPT$par[2]), exp(OPT$par[3]), h00, r00))
+# AIC
+AICHO <- 2*OPTHO$objective + 2*length(OPTHO$par)
+
+# BIC
+BICHO <- 2*OPTHO$objective + length(OPTHO$par)*log(length(survtimes))
+
+fitHO <- Vectorize(function(t) hHO(t,exp(OPT$par[1]), exp(OPT$par[2]), exp(OPT$par[3]), h00, r00))
 curve(temph,0,20, lwd = 2)
 
 ## ---------------------------------------------------------------------------------------------------------
