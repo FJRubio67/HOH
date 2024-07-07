@@ -163,21 +163,25 @@ hHO <- function(t, eta, w0, hb, h0, r0) {
     A <- rep$A
     phi <- rep$phi
     haz <-  hb + A * exp(-w0 * eta * t) * sin(w1 * t + phi)
-  }
+    }
   
   # Over-damped
   if (eta > 1) {
     mu = w1 / (w0 * eta)
     a = (h0 - hb) / mu + r0 / w1
-    haz <- hb + exp(-w0 * eta * t) * (0.5 * (h0 - hb + a) * exp(w1 * t) +
-                                        0.5 * (h0 - hb - a) * exp(-w1 * t))
+    
+haz <- hb + exp(-w0 * eta * t) * (0.5 * (h0 - hb + a) * exp(w1 * t) + 
+                                 0.5 * (h0 - hb - a) * exp(-w1 * t)) 
   }
   
   # Critically damped
   if (eta == 1) {
-    haz <- hb + (h0 - hb + t * (r0 + w0 * (h0 - hb))) * exp(-w0 * t)
+    haz <- hb + (h0 - hb + t * (r0 + w0 * (h0 - hb))) * exp(-w0 * tv)
   }
-  return(haz)
+  
+
+    return(haz)
+  
 }
 
 
@@ -567,32 +571,34 @@ log_likHOFICS <- function(par) {
 # Fixed initial conditions
 #--------------------------------------------------------------------------------------------------
 
-log_postHOFIC <- function(par) {
-  tau <- exp(par[1])
-  w2 <- exp(par[2])
+log_postHOFICS <- function(par) {
+  eta <- exp(par[1])
+  w0 <- exp(par[2])
   hb <- exp(par[3])
   
   
-  newpar <- rep2ap(tau, w2, hb, h00, r00)
+  cond <- SupportHOFICS(par)
   
-  A <- as.numeric(newpar$A)
-  phi <- as.numeric(newpar$phi)
+  if (!cond)
+    log_lik <- Inf
   
-  # Terms in the log log likelihood function
-  ll_haz <- sum(log(hHO(t_obs, tau, w2, hb, A, phi)))
-  
-  ll_chaz <- sum(chHO(survtimes, tau, w2, hb, A, phi))
-  
-  log_lik <- -ll_haz + ll_chaz
+  if (cond) {
+    # Terms in the log log likelihood function
+    ll_haz <- sum(log(hHO(t_obs, eta, w0, hb, h00, r00)))
+    
+    ll_chaz <- sum(chHO(survtimes, eta, w0, hb, h00, r00))
+    
+    log_lik <- -ll_haz + ll_chaz
+  }
   
   # Log prior
   
   
-  log_prior <- -dgamma(tau,
+  log_prior <- -dgamma(eta,
                        shape = 2,
                        scale = 2,
                        log = TRUE) -
-    dgamma(w2,
+    dgamma(w0,
            shape = 2,
            scale = 2,
            log = TRUE) -
@@ -603,11 +609,11 @@ log_postHOFIC <- function(par) {
   
   # Log-Jacobian
   
-  log_jacobian <- -log(tau) - log(w2) - log(hb)
+  log_jacobian <- -log(eta) - log(w0) - log(hb)
   
   # log posterior
   
-  log_post0 <- log_lik + log_prior + log_jacobian
-  
+ log_post0 <- log_lik + log_prior + log_jacobian
+   
   return(as.numeric(log_post0))
 }

@@ -13,6 +13,7 @@ library(ggplot2)
 library(HazReg)
 library(Rtwalk)
 library(knitr)
+library(matrixStats)
 
 
 ## ----include=FALSE----------------------------------------------------------------------------------------
@@ -72,13 +73,10 @@ survtimes <- df$time
 # Harmonic Oscillator ODE model for the hazard function: Analytic solution
 #--------------------------------------------------------------------------------------------------
 
-# Initial point
-initHO <- c(0.5,0,0)
-
 # Initial conditions
 
 St <- 0.999
-Stt <- 1 - 0.05/11
+Stt <- 0.998
 S0 <- 1
 dt <- 1/12
 
@@ -97,9 +95,14 @@ h00 <- h0s
 r00 <- h0p
 
 
-nlminb(initHO, log_likHOFICS, control = list(iter.max = 1000))
+# Initial point
+initHO <- c(0.1,0,0)
 
-optim(initHO, log_likHOFICS, control = list(maxit = 1000))
+OPT <- optim(initHO, log_likHOFICS, control = list(maxit = 1000))
+OPT
+
+temph <- Vectorize(function(t) hHO(t,exp(OPT$par[1]), exp(OPT$par[2]), exp(OPT$par[3]), h00, r00))
+curve(temph,0,20, lwd = 2)
 
 ## ---------------------------------------------------------------------------------------------------------
 #==================================================================================================
@@ -113,37 +116,37 @@ optim(initHO, log_likHOFICS, control = list(maxit = 1000))
 
 
 # Random initial points
-X0HO <- function(x) { initHO + runif(3,-0.05,0.05) }
+X0HO <- function(x) { OPT$par + runif(3,-0.05,0.05) }
 
-NMC = 60000
+NMC = 50000
 
 # twalk for analytic solution
 set.seed(1234)
-infoHO <- Runtwalk( dim=3,  Tr=NMC,  Obj=log_postHOFIC, Supp=SupportHOFIC, 
+infoHO <- Runtwalk( dim=3,  Tr=NMC,  Obj=log_postHOFICS, Supp=SupportHOFICS, 
                     x0=X0HO(), xp0=X0HO(),PlotLogPost = TRUE) 
 
-ind = ind=seq(10000,NMC,100) 
+ind = ind=seq(5000,NMC,100) 
 
 
 postHO <- cbind(exp(infoHO$output[ind,1:3]))
 
-taup <- as.vector(postHO[,1])
-w2p <- as.vector(postHO[,2])
+etap <- as.vector(postHO[,1])
+w0p <- as.vector(postHO[,2])
 hbp <- as.vector(postHO[,3])
 
 Ap <- vector()
 phip <- vector()
 
 for(i in 1:length(ind)) {
-  newpar <- hr2ap(taup[i], w2p[i], hbp[i], h00, r00)
+  newpar <- rep2ap(etap[i], w0p[i], hbp[i], h00, r00)
   
   Ap[i] <- as.numeric(newpar$A)
   phip[i] <- as.numeric(newpar$phi)
 }
 
 
-hist(taup)
-hist(w2p)
+hist(etap)
+hist(w0p)
 hist(hbp)
 hist(Ap)
 hist(phip)
@@ -153,8 +156,8 @@ hist(phip)
 predhHO <- Vectorize(function(t){
   num <- den <- temp <- vector()
   for(i in 1:length(ind)){
-    chi <- chshoode( t, taup[i], w2p[i], hbp[i], Ap[i], phip[i] )
-    num[i] <- exp(-chi)*hshoode( t, taup[i], w2p[i], hbp[i], Ap[i], phip[i] )
+    chi <- chHO( t, etap[i], w0p[i], hbp[i], h00, r00 )
+    num[i] <- exp(-chi)*hHO( t, etap[i], w0p[i], hbp[i], h00, r00 )
     den[i] <- exp(-chi)
   }
   return(mean(num)/mean(den))
@@ -171,7 +174,7 @@ hCIHO<- matrix(0, ncol = ntvec, nrow = length(ind))
 
 for(j in 1:length(ind)){
   for(k in 1:ntvec){
-    hCIHO[j,k ] <- hshoode( tvec[k],taup[j], w2p[j], hbp[j], Ap[j], phip[j]) 
+    hCIHO[j,k ] <- hHO( tvec[k],etap[j], w0p[j], hbp[j], h00, r00) 
   }
 } 
 
@@ -180,7 +183,7 @@ hCIHOU <- apply(hCIHO, 2, qu)
 fit <- bshazard(Surv(df$time, df$status) ~ 1, data = df, nbin = 100, degree = 3, verbose = FALSE)
 
 curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.065))
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.08))
 
 
 plot(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
