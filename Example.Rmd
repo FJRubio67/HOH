@@ -41,6 +41,7 @@ library(ggplot2)
 #library(devtools)
 #install_github("FJRubio67/HazReg")
 library(HazReg)
+library(spBayes)
 library(Rtwalk)
 library(knitr)
 library(bshazard)
@@ -402,21 +403,18 @@ curve(p_gammaPGW,0,15, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 #--------------------------------------------------------------------------------------------------
 
 par(mfrow = c(2,2))
-p_lambdaHR <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_lambdaHR,0,15, n = 1000, xlab = ~lambda, ylab = "Prior Density",
+p_eta <- Vectorize(function(t) dgamma(t, shape = 0.5, scale = 1))
+curve(p_eta,0,2, n = 1000, xlab = ~eta, ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_kappaHR <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_kappaHR,0,15, n = 1000, xlab = ~kappa, ylab = "Prior Density",
+p_w0 <- Vectorize(function(t) dgamma(t, shape = 2, scale = 1))
+curve(p_w0,0,10, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_alphaHR <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_alphaHR,0,15, n = 1000, xlab = ~alpha, ylab = "Prior Density",
+p_hb <- Vectorize(function(t) dgamma(t, shape = 0.1, scale = 0.1))
+curve(p_hb,0,0.1, n = 1000, xlab = expression(h_b), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_betaHR <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_betaHR,0,15, n = 1000, xlab = ~beta, ylab = "Prior Density",
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 par(mfrow = c(1,1))
 
@@ -429,25 +427,25 @@ par(mfrow = c(1,1))
 n.batch <- 1100
 batch.length <- 100
 
-lp <- function(par) -log_postHR(par)
+lp <- function(par) -log_postHO(par)
 
-inits <- OPTHR$par
+inits <- OPTHO$par
 ```
 
 ```{r include=FALSE}
 set.seed(1234)
-infoHR <- adaptMetropGibbs(ltd=lp, starting=inits, accept.rate=0.44, batch=n.batch, 
+infoHO<- adaptMetropGibbs(ltd=lp, starting=inits, accept.rate=0.44, batch=n.batch, 
                            batch.length=batch.length, report=100, verbose=FALSE)
 ```
 
 ```{r eval=FALSE}
 set.seed(1234)
-infoHR <- adaptMetropGibbs(ltd=lp, starting=inits, accept.rate=0.44, batch=n.batch, 
+infoHO <- adaptMetropGibbs(ltd=lp, starting=inits, accept.rate=0.44, batch=n.batch, 
                            batch.length=batch.length, report=100, verbose=FALSE)
 ```
 
 ```{r}
-chainHR <- infoHR$p.theta.samples[,1:4]
+chainHO <- infoHO$p.theta.samples[,1:3]
 
 # Burning and thinning the chain
 burn <- 1e4
@@ -458,36 +456,30 @@ ind <- seq(burn,NS,thin)
 
 
 # Summaries
-summHR <- apply(exp(chainHR[ind,1:4]),2,summary)
-colnames(summHR) <- c("lambda","kappa","alpha","beta")
+summHR <- apply(exp(chainHO[ind,1:3]),2,summary)
+colnames(summHR) <- c("eta","w_0","h_b")
 kable(summHR, digits = 3)
 
 # KDEs
-lambdapHR <- exp(chainHR[,1][ind])
-kappapHR <- exp(chainHR[,2][ind])
-alphapHR <- exp(chainHR[,3][ind])
-betapHR <- exp(chainHR[,4][ind])
+etaHO <- exp(chainHO[,1][ind])
+w0HO <- exp(chainHO[,2][ind])
+hbHO <- exp(chainHO[,3][ind])
 
 
-plot(density(lambdapHR), main = "", xlab = expression(lambda), ylab = "Density",
+plot(density(etaHO), main = "", xlab = expression(lambda), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_lambdaHR,0,3, n = 1000, xlab = ~lambda, ylab = "Prior Density", 
+curve(p_eta,0,1, n = 1000, xlab = ~lambda, ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
 
-plot(density(kappapHR), main = "", xlab = expression(kappa), ylab = "Density",
+plot(density(w0HO), main = "", xlab = expression(kappa), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_kappaHR,0.05,0.3, n = 1000, xlab = ~kappa, ylab = "Prior Density", 
+curve(p_w0,0.5,2, n = 1000, xlab = expression(w_0), ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
-plot(density(alphapHR), main = "", xlab = expression(alpha), ylab = "Density",
+plot(density(hbHO), main = "", xlab = expression(alpha), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_alphaHR,0,10, n = 1000, xlab = ~alpha, ylab = "Prior Density", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
-
-plot(density(betapHR), main = "", xlab = expression(beta), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_betaHR,0,15, n = 1000, xlab = ~beta, ylab = "Prior Density", 
+curve(p_hb,0,0.1, n = 1000, xlab = expression(h_b), ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
 ```
