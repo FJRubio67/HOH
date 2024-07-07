@@ -610,7 +610,7 @@ log_postHOFICS <- function(par) {
                        log = TRUE) -
     dgamma(w0,
            shape = 2,
-           scale = 2,
+           scale = 1,
            log = TRUE) -
     dgamma(hb,
            shape = 0.1,

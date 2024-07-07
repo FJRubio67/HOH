@@ -101,6 +101,8 @@ initHO <- c(0.1,0,0)
 OPT <- optim(initHO, log_likHOFICS, control = list(maxit = 1000))
 OPT
 
+2*OPT$value + 2*length(OPT$par)
+
 temph <- Vectorize(function(t) hHO(t,exp(OPT$par[1]), exp(OPT$par[2]), exp(OPT$par[3]), h00, r00))
 curve(temph,0,20, lwd = 2)
 
@@ -118,10 +120,10 @@ curve(temph,0,20, lwd = 2)
 # Random initial points
 X0HO <- function(x) { OPT$par + runif(3,-0.01,0.01) }
 
-NMC = 15000
+NMC = 55000
 
 # twalk for analytic solution
-set.seed(1234)
+set.seed(123)
 infoHO <- Runtwalk( dim=3,  Tr=NMC,  Obj=log_postHOFICS, Supp=SupportHOFICS, 
                     x0=X0HO(), xp0=X0HO(),PlotLogPost = TRUE) 
 
