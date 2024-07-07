@@ -551,7 +551,7 @@ SupportHOFICS <- function(par) {
 # Fixed initial conditions
 #--------------------------------------------------------------------------------------------------
 
-log_likHOFICS <- function(par) {
+log_likHO <- function(par) {
   eta <- exp(par[1])
   w0 <- exp(par[2])
   hb <- exp(par[3])
@@ -581,7 +581,7 @@ log_likHOFICS <- function(par) {
 # Fixed initial conditions
 #--------------------------------------------------------------------------------------------------
 
-log_postHOFICS <- function(par) {
+log_postHO <- function(par) {
   eta <- exp(par[1])
   w0 <- exp(par[2])
   hb <- exp(par[3])

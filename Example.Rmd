@@ -191,23 +191,23 @@ r00 <- h00^2 - Spp/St
 initHO <- c(0.1,0,0)
 
 # Optimisation step
-OPTHO <- optim(initHO, log_likHOFICS, control = list(maxit = 1000))
+OPTHO <- optim(initHO, log_likHO, control = list(maxit = 1000))
 OPTHO
 
 MLEHO <- exp(OPTHO$par)
 
 # AIC
-AICHO <- 2*OPTHO$objective + 2*length(OPTHO$par)
+AICHO <- 2*OPTHO$value + 2*length(OPTHO$par)
 
 # BIC
-BICHO <- 2*OPTHO$objective + length(OPTHO$par)*log(length(survtimes))
+BICHO <- 2*OPTHO$value + length(OPTHO$par)*log(length(survtimes))
 ```
 
 ## Comparison
 
 ```{r}
 # AIC comparison
-AICs <- c(AICW, AICPGW, AICH0)
+AICs <- c(AICW, AICPGW, AICHO)
 
 AICs
 
@@ -215,48 +215,41 @@ AICs
 which.min(AICs)
 
 # BIC comparison
-BICs <- c(BICW, BICPGW, BICH0)
+BICs <- c(BICW, BICPGW, BICHO)
 
 BICs
 
 # Best model (Harmonic oscillator)
 which.min(BICs)
 
-# Fitted hazard and cumulative hazard
-fithHO <- Vectorize(function(t) hHO(t,exp(OPT$par[1]), exp(OPT$par[2]), exp(OPT$par[3]), h00, r00))
-fitchHO <- Vectorize(function(t) chHO(t,exp(OPT$par[1]), exp(OPT$par[2]), exp(OPT$par[3]), h00, r00))
-
+# Fitted hazard, cumulative hazard, and survival
+fithHO <- Vectorize(function(t) hHO(t,exp(OPTHO$par[1]), exp(OPTHO$par[2]), exp(OPTHO$par[3]), h00, r00))
+fitchHO <- Vectorize(function(t) chHO(t,exp(OPTHO$par[1]), exp(OPTHO$par[2]), exp(OPTHO$par[3]), h00, r00))
+fitsHO <- Vectorize(function(t) exp(-chHO(t,exp(OPTHO$par[1]), exp(OPTHO$par[2]), exp(OPTHO$par[3]), h00, r00)))
 
 # Comparison: hazard functions
-curve(fithHO, 0, max(times), xlim= c(0,max(times)), ylim = c(0,0.125), lwd = 2,
-     xlab = "Time", ylab = "Hazard", main = "Hazard-Response ODE", cex.axis = 1.5, cex.lab = 1.5)
-curve(fithw, 0, max(times), lwd= 2, lty = 2, col = "gray", add = TRUE)
-curve(fithpgw, 0, max(times), lwd= 2, lty = 3, col = "gray", add = TRUE)
-legend("topleft", legend = c("HR Solver","Weibull", "PGW"), lty = c(1,2,3), 
+curve(fithHO, 0, max(survtimes), xlim= c(0,max(survtimes)), ylim = c(0,0.125), lwd = 2,
+     xlab = "Time", ylab = "Hazard", main = "Harmonic Oscillator", cex.axis = 1.5, cex.lab = 1.5)
+curve(fithw, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
+curve(fithpgw, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
+legend("topleft", legend = c("Harmonic Oscillator","Weibull", "PGW"), lty = c(1,2,3), 
        lwd = c(2,2,2), col = c("black","gray","gray"))
 
-# Comparison: hazard vs. treament
-curve(fitchHO, 0, max(times), ylim = c(0,0.125), lwd = 2,
-     xlab = "Time", ylab = "Hazard", main = "Hazard-Response ODE", cex.axis = 1.5, cex.lab = 1.5)
-points(as.matrix(out[,c(1,3)]), xlim = c(0,max(times)), ylim = c(0,0.125), type = "l", lwd = 2, lty = 2,
-     xlab = "Time", ylab = "Hazard", main = "Hazard-Response ODE", cex.axis = 1.5, cex.lab = 1.5)
-abline(h = MLEHR[2], lwd = 2, col = "red")
-
 # Comparison: cumulative hazard functions
-plot(as.matrix(out[,c(1,4)]), xlim = c(0,max(times)), ylim = c(0,2.25), type = "l", lwd = 2,
-     xlab = "Time", ylab = "Cumulative Hazard", main = "Hazard-Response ODE", cex.axis = 1.5, cex.lab = 1.5)
-curve(fitchw, 0, max(times), lwd= 2, lty = 2, col = "gray", add = TRUE)
-curve(fitchpgw, 0, max(times), lwd= 2, lty = 3, col = "gray", add = TRUE)
-legend("topleft", legend = c("HR Solver","Weibull","PGW"), lty = c(1,2,3), 
+curve(fitchHO, 0, max(survtimes), xlim = c(0,max(survtimes)), ylim = c(0,2.25),  lwd = 2,
+     xlab = "Time", ylab = "Cumulative Hazard", main = "Harmonic Oscillator", cex.axis = 1.5, cex.lab = 1.5)
+curve(fitchw, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
+curve(fitchpgw, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
+legend("topleft", legend = c("Harmonic Oscillator","Weibull","PGW"), lty = c(1,2,3), 
        lwd = c(2,2,2), col = c("black","gray","gray"))
 
 # Comparison: survival functions
-plot(as.vector(out[,1]),exp(-as.vector(out[,4])), xlim = c(0,max(times)), ylim = c(0,1), type = "l", lwd = 2,
-     xlab = "Time", ylab = "Survival", main = "Hazard-Response ODE", cex.axis = 1.5, cex.lab = 1.5)
-curve(fitsw, 0, max(times), lwd= 2, lty = 2, col = "gray", add = TRUE)
-curve(fitspgw, 0, max(times), lwd= 2, lty = 3, col = "gray", add = TRUE)
+curve(fitsHO, 0, max(survtimes), xlim = c(0,max(survtimes)), ylim = c(0,1), lwd = 2,
+     xlab = "Time", ylab = "Survival", main = "Harmonic Oscillator", cex.axis = 1.5, cex.lab = 1.5)
+curve(fitsw, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
+curve(fitspgw, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
 points(km$time, km$surv, type = "l", col = "green", lwd = 2, lty = 1)
-legend("topright", legend = c("HR Solver","Weibull","PGW","KM"), lty = c(1,2,3,1), 
+legend("topright", legend = c("Harmonic Oscillator","Weibull","PGW","KM"), lty = c(1,2,3,1), 
        lwd = c(2,2,2,2), col = c("black","gray","gray","green"))
 
 ```
