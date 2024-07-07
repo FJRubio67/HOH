@@ -438,101 +438,101 @@ SupportHOFICS <- function(par) {
   return(out)
   
 }
-
-#--------------------------------------------------------------------------------------------------
-# Shifted Harmonic Oscillator ODE -log-likelihood function: Analytic solution
-#--------------------------------------------------------------------------------------------------
-
-log_likHO <- function(par) {
-  tau <- exp(par[1])
-  w2 <- exp(par[2])
-  hb <- exp(par[3])
-  
-  h0 <- exp(par[4])
-  r0 <- par[5]
-  
-  newpar <- reo2ap(tau, w2, hb, h0, r0)
-  
-  A <- as.numeric(newpar$A)
-  phi <- as.numeric(newpar$phi)
-  
-  cond <- SupportHO(par)
-  
-  if (!cond)
-    log_lik <- Inf
-  
-  if (cond) {
-    # Terms in the log log likelihood function
-    ll_haz <- sum(log(hHO(t_obs, tau, w2, hb, A, phi)))
-    
-    ll_chaz <- sum(chHO(survtimes, tau, w2, hb, A, phi))
-    
-    log_lik <- -ll_haz + ll_chaz
-  }
-  
-  return(log_lik)
-}
-
-
-
-#--------------------------------------------------------------------------------------------------
-# Shifted Harmonic Oscillator ODE -log-posterior function: Analytic solution
-#--------------------------------------------------------------------------------------------------
-
-log_postHO <- function(par) {
-  tau <- exp(par[1])
-  w2 <- exp(par[2])
-  hb <- exp(par[3])
-  
-  h0 <- exp(par[4])
-  r0 <- par[5]
-  
-  newpar <- rep2ap(tau, w2, hb, h0, r0)
-  
-  A <- as.numeric(newpar$A)
-  phi <- as.numeric(newpar$phi)
-  
-  # Terms in the log log likelihood function
-  ll_haz <- sum(log(hHO(t_obs, tau, w2, hb, A, phi)))
-  
-  ll_chaz <- sum(chHO(survtimes, tau, w2, hb, A, phi))
-  
-  log_lik <- -ll_haz + ll_chaz
-  
-  # Log prior
-  
-  
-  log_prior <- -dgamma(tau,
-                       shape = 2,
-                       scale = 2,
-                       log = TRUE) -
-    dgamma(w2,
-           shape = 2,
-           scale = 2,
-           log = TRUE) -
-    dgamma(hb,
-           shape = 2,
-           scale = 2,
-           log = TRUE) -
-    dgamma(h0,
-           shape = 2,
-           scale = 2,
-           log = TRUE) -
-    dnorm(r0,
-          mean = 0,
-          sd = 100,
-          log = TRUE)
-  
-  # Log-Jacobian
-  
-  log_jacobian <- -log(tau) - log(w2) - log(hb) - log(h0)
-  
-  # log posterior
-  
-  log_post0 <- log_lik + log_prior + log_jacobian
-  
-  return(as.numeric(log_post0))
-}
+# 
+# #--------------------------------------------------------------------------------------------------
+# # Shifted Harmonic Oscillator ODE -log-likelihood function: Analytic solution
+# #--------------------------------------------------------------------------------------------------
+# 
+# log_likHO <- function(par) {
+#   tau <- exp(par[1])
+#   w2 <- exp(par[2])
+#   hb <- exp(par[3])
+#   
+#   h0 <- exp(par[4])
+#   r0 <- par[5]
+#   
+#   newpar <- reo2ap(tau, w2, hb, h0, r0)
+#   
+#   A <- as.numeric(newpar$A)
+#   phi <- as.numeric(newpar$phi)
+#   
+#   cond <- SupportHO(par)
+#   
+#   if (!cond)
+#     log_lik <- Inf
+#   
+#   if (cond) {
+#     # Terms in the log log likelihood function
+#     ll_haz <- sum(log(hHO(t_obs, tau, w2, hb, A, phi)))
+#     
+#     ll_chaz <- sum(chHO(survtimes, tau, w2, hb, A, phi))
+#     
+#     log_lik <- -ll_haz + ll_chaz
+#   }
+#   
+#   return(log_lik)
+# }
+# 
+# 
+# 
+# #--------------------------------------------------------------------------------------------------
+# # Shifted Harmonic Oscillator ODE -log-posterior function: Analytic solution
+# #--------------------------------------------------------------------------------------------------
+# 
+# log_postHO <- function(par) {
+#   tau <- exp(par[1])
+#   w2 <- exp(par[2])
+#   hb <- exp(par[3])
+#   
+#   h0 <- exp(par[4])
+#   r0 <- par[5]
+#   
+#   newpar <- rep2ap(tau, w2, hb, h0, r0)
+#   
+#   A <- as.numeric(newpar$A)
+#   phi <- as.numeric(newpar$phi)
+#   
+#   # Terms in the log log likelihood function
+#   ll_haz <- sum(log(hHO(t_obs, tau, w2, hb, A, phi)))
+#   
+#   ll_chaz <- sum(chHO(survtimes, tau, w2, hb, A, phi))
+#   
+#   log_lik <- -ll_haz + ll_chaz
+#   
+#   # Log prior
+#   
+#   
+#   log_prior <- -dgamma(tau,
+#                        shape = 2,
+#                        scale = 2,
+#                        log = TRUE) -
+#     dgamma(w2,
+#            shape = 2,
+#            scale = 2,
+#            log = TRUE) -
+#     dgamma(hb,
+#            shape = 2,
+#            scale = 2,
+#            log = TRUE) -
+#     dgamma(h0,
+#            shape = 2,
+#            scale = 2,
+#            log = TRUE) -
+#     dnorm(r0,
+#           mean = 0,
+#           sd = 100,
+#           log = TRUE)
+#   
+#   # Log-Jacobian
+#   
+#   log_jacobian <- -log(tau) - log(w2) - log(hb) - log(h0)
+#   
+#   # log posterior
+#   
+#   log_post0 <- log_lik + log_prior + log_jacobian
+#   
+#   return(as.numeric(log_post0))
+# }
 
 
 
@@ -595,16 +595,16 @@ log_postHOFICS <- function(par) {
   
   
   log_prior <- -dgamma(eta,
-                       shape = 2,
-                       scale = 2,
+                       shape = 0.5,
+                       scale = 1,
                        log = TRUE) -
     dgamma(w0,
            shape = 2,
            scale = 2,
            log = TRUE) -
     dgamma(hb,
-           shape = 2,
-           scale = 2,
+           shape = 0.1,
+           scale = 0.1,
            log = TRUE)
   
   # Log-Jacobian

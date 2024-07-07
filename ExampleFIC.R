@@ -116,9 +116,9 @@ curve(temph,0,20, lwd = 2)
 
 
 # Random initial points
-X0HO <- function(x) { OPT$par + runif(3,-0.05,0.05) }
+X0HO <- function(x) { OPT$par + runif(3,-0.01,0.01) }
 
-NMC = 50000
+NMC = 110000
 
 # twalk for analytic solution
 set.seed(1234)
