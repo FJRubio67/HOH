@@ -20,7 +20,7 @@ The hazard-Response model is defined through the second order ODE:
 h''(t) + 2 \eta w_0 h'(t) + w^2_0 (h(t) - h_b) = 0,
 \label{eq:harmonic_osc}    
 \end{equation}
-where $w_0 > 0$ is called the ``natural frequency'', $\eta >0$ is the ``damping coefficient''. The shift parameter $h_b > 0$ ensures that the solution is positive
+where $w_0 > 0$ is called the "natural frequency", $\eta >0$ is the "damping coefficient". The shift parameter $h_b > 0$ ensures that the solution is positive
 
 
 The following R code presents an example from @christen:2024 where we fit the damped harmonic oscillator model to the `rotterdam` data set from the R package `survival`. We present both Likelihood-based and Bayesian analyses.
@@ -608,16 +608,8 @@ points(tvec,  hCIHOL, col = "gray", type = "l")
 points(tvec,  hCIHOU, col = "gray", type = "l")
 polygon(c(tvec, rev(tvec)), c(hCIHOL[order(tvec)], rev(hCIHOU[order(tvec)])),
         col = "gray", border = NA)
-points(fit$time, fit$hazard, type='l', lwd = 2, lty = 2, ylim = c(0,0.25), col = "darkgray")
-lines(fit$time, fit$lower.ci, lty = 2, lwd = 1, col = "gray")
-lines(fit$time, fit$upper.ci, lty = 2, lwd = 1, col = "gray")
 points(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
        cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1)
-legend("bottomright", legend = c("HO", "BS"), lty = c(1,2),  
-       lwd = c(2,2), col = c("black","darkgray")) 
-
-
-
 ``` 
 
 
@@ -657,113 +649,20 @@ fit <- bshazard(Surv(df$time, df$status) ~ 1, data = df, nbin = 100, degree = 3,
 ```
 
 ```{r}
-# Hazard vs. Response
-plot(tvec,  hpredHR, type = "l", xlab = "Time", ylab = "Hazard", 
-       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.125))
+# Hazard 
 
-# bshazard with confidence intervals
-points(fit$time, fit$hazard, type='l', lwd = 2, ylim = c(0,0.15), col = "darkgray")
+
+plot(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
+       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.1))
+points(tvec,  hCIHOL, col = "gray", type = "l")
+points(tvec,  hCIHOU, col = "gray", type = "l")
+polygon(c(tvec, rev(tvec)), c(hCIHOL[order(tvec)], rev(hCIHOU[order(tvec)])),
+        col = "gray", border = NA)
+points(fit$time, fit$hazard, type='l', lwd = 2, lty = 2, ylim = c(0,0.25), col = "darkgray")
 lines(fit$time, fit$lower.ci, lty = 2, lwd = 1, col = "gray")
 lines(fit$time, fit$upper.ci, lty = 2, lwd = 1, col = "gray")
-
-# Hazard vs. Response
-points(tvec,  hpredHR, type = "l", xlab = "Time", ylab = "Hazard", 
-     cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.15))
-
-```
-
-# Sensitivity Analysis
-
-In this section, we provide a sensitivity analysis where instead of fixing the initial conditions $h_0$ and $q_0$, we set a prior on these parameters. These priors are consistent with the choice of the initial conditions chosen in the previous study, in the sense that their mean coincides with the values previously chosen. For $h_0$ we choose a gamma prior with shape parameter $2$ and scale $5\times 10^{-3}$. For $q_0$ we choose a gamma prior with shape parameter $2$ and scale $5\times 10^{-7}$. We can see that the posterior distribution of $h_0$ and $q_0$ is very similar to the prior, indicating weak identifiability of these parameters. 
-
-
-```{r}
-
-# Log-posterior (unknown initial conditions)
-lpX <- function(par) -log_postHRX(par)
-
-initsX <- c(OPTHR$par,h0,q0)
-
-
-## ----include=FALSE----------------------------------------------------------------------------------------
-set.seed(1234)
-infoHRX <- adaptMetropGibbs(ltd=lpX, starting=initsX, accept.rate=0.44, batch=n.batch, 
-                           batch.length=batch.length, report=100, verbose=FALSE)
-
-
-chainHRX <- infoHRX$p.theta.samples[,1:6]
-
-
-# Summaries
-summHRX <- apply(exp(chainHRX[ind,1:6]),2,summary)
-colnames(summHRX) <- c("lambda","kappa","alpha","beta","h0","q0")
-kable(summHRX, digits = 3)
-
-# KDEs
-lambdapHRX <- exp(chainHRX[,1][ind])
-kappapHRX <- exp(chainHRX[,2][ind])
-alphapHRX <- exp(chainHRX[,3][ind])
-betapHRX <- exp(chainHRX[,4][ind])
-h0pHRX <- exp(chainHRX[,5][ind])
-q0pHRX <- exp(chainHRX[,6][ind])
-
-
-plot(density(lambdapHRX), main = "", xlab = expression(lambda), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_lambdaHR,0,3, n = 1000, xlab = ~lambda, ylab = "Prior Density", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
-
-
-plot(density(kappapHRX), main = "", xlab = expression(kappa), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_kappaHR,0.05,0.3, n = 1000, xlab = ~kappa, ylab = "Prior Density", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
-
-plot(density(alphapHRX), main = "", xlab = expression(alpha), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_alphaHR,0,10, n = 1000, xlab = ~alpha, ylab = "Prior Density", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
-
-plot(density(betapHRX), main = "", xlab = expression(beta), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_betaHR,0,15, n = 1000, xlab = ~beta, ylab = "Prior Density", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
-
-p_h0HR <- Vectorize(function(t) dgamma(t, shape = 2, scale = 5e-3))
-plot(density(h0pHRX), main = "", xlab = expression(h[0]), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_h0HR,0,0.05, n = 1000, xlab = ~beta, ylab = "Prior Density", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
-
-p_q0HR <- Vectorize(function(t) dgamma(t, shape = 2, scale = 5e-7))
-plot(density(q0pHRX), main = "", xlab = expression(h[0]), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_q0HR,0,7e-6, n = 1000, xlab = ~beta, ylab = "Prior Density", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
-
-
-# Comparison with the posteriors obtained by fixing the initial conditions
-
-plot(density(lambdapHR), main = "", xlab = expression(lambda), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-points(density(lambdapHRX), lwd = 2, type = "l", lty = 2)
-legend("topright", legend = c("fixed","prior"), lty = c(1,2), lwd = c(2,2))
-
-
-plot(density(kappapHR), main = "", xlab = expression(kappa), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2, ylim = c(0,30))
-points(density(kappapHRX), lwd = 2, type = "l", lty = 2)
-legend("topright", legend = c("fixed","prior"), lty = c(1,2), lwd = c(2,2))
-
-
-plot(density(alphapHR), main = "", xlab = expression(alpha), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-points(density(alphapHRX), lwd = 2, type = "l", lty = 2)
-legend("topright", legend = c("fixed","prior"), lty = c(1,2), lwd = c(2,2))
-
-plot(density(betapHR), main = "", xlab = expression(beta), ylab = "Density",
-     cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-points(density(betapHRX), lwd = 2, type = "l", lty = 2)
-legend("topright", legend = c("fixed","prior"), lty = c(1,2), lwd = c(2,2))
-
+points(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
+       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1)
+legend("bottomright", legend = c("HO", "BS"), lty = c(1,2),  
+       lwd = c(2,2), col = c("black","darkgray"))
 ```
