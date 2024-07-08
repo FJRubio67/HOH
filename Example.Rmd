@@ -391,7 +391,7 @@ plot(density(gammapPGW), main = "", xlab = expression(gamma), ylab = "Density",
 curve(p_gammaPGW,0,15, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 ```
 
-## The Hazard-Response Model
+## The Harmonic Oscillator hazard Model
 
 ```{r}
 #==================================================================================================
@@ -461,23 +461,23 @@ colnames(summHR) <- c("eta","w_0","h_b")
 kable(summHR, digits = 3)
 
 # KDEs
-etaHO <- exp(chainHO[,1][ind])
-w0HO <- exp(chainHO[,2][ind])
-hbHO <- exp(chainHO[,3][ind])
+etap <- exp(chainHO[,1][ind])
+w0p <- exp(chainHO[,2][ind])
+hbp <- exp(chainHO[,3][ind])
 
 
-plot(density(etaHO), main = "", xlab = expression(lambda), ylab = "Density",
+plot(density(etap), main = "", xlab = expression(eta), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
 curve(p_eta,0,1, n = 1000, xlab = ~lambda, ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
 
-plot(density(w0HO), main = "", xlab = expression(kappa), ylab = "Density",
+plot(density(w0p), main = "", xlab = expression(w_0), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
 curve(p_w0,0.5,2, n = 1000, xlab = expression(w_0), ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
-plot(density(hbHO), main = "", xlab = expression(alpha), ylab = "Density",
+plot(density(hbp), main = "", xlab = expression(h_b), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
 curve(p_hb,0,0.1, n = 1000, xlab = expression(h_b), ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
@@ -546,92 +546,80 @@ hPGWs <-  predhPGW(tvec)
 hCIPGWL <- apply(hCIPGW, 2, ql)
 hCIPGWU <- apply(hCIPGW, 2, qu)
 
-# Hazard-Response
+# Harmonic Oscillator
 
-hCIHR <- matrix(0, ncol = ntvec, nrow = length(ind))
-chCIHR <- matrix(0, ncol = ntvec, nrow = length(ind))
-SCIHR <- matrix(0, ncol = ntvec, nrow = length(ind))
-qCIHR <- matrix(0, ncol = ntvec, nrow = length(ind))
+Ap <- vector()
+phip <- vector()
+
+for(i in 1:length(ind)) {
+  newpar <- rep2ap(etap[i], w0p[i], hbp[i], h00, r00)
+  
+  Ap[i] <- as.numeric(newpar$A)
+  phip[i] <- as.numeric(newpar$phi)
+}
+
+
+hist(Ap)
+hist(phip)
+
+
+# Predictive HO hazard
+predhHO <- Vectorize(function(t){
+  num <- den <- temp <- vector()
+  for(i in 1:length(ind)){
+    chi <- chHO( t, etap[i], w0p[i], hbp[i], h00, r00 )
+    num[i] <- exp(-chi)*hHO( t, etap[i], w0p[i], hbp[i], h00, r00 )
+    den[i] <- exp(-chi)
+  }
+  return(mean(num)/mean(den))
+})
+
+
+# Creating the credible envelopes
+tvec <- seq(0,20,by = 0.01)
+ntvec <- length(tvec)
+
+hHOs <-  predhHO(tvec)
+
+hCIHO<- matrix(0, ncol = ntvec, nrow = length(ind))
 
 for(j in 1:length(ind)){
-  paramsHRj  <- c(lambda = lambdapHR[j], kappa = kappapHR[j], alpha = alphapHR[j],
-                  beta = betapHR[j])
-  initHRj      <- c(h = h0, q = q0, H = 0 )
-  outj <- ode(initHRj, tvec, hazmodHR, paramsHRj, method = "lsode", jacfunc = jacODE, jactype = "fullusr")
-  
-  hCIHR[j, ] <- outj[,2]
-  qCIHR[j, ] <- outj[,3]
-  chCIHR[j, ] <- outj[,4]
-  SCIHR[j, ] <- exp(-outj[,4])
-  
+  for(k in 1:ntvec){
+    hCIHO[j,k ] <- hHO( tvec[k],etap[j], w0p[j], hbp[j], h00, r00) 
+  }
 } 
 
+hCIHOL <- apply(hCIHO, 2, ql)
+hCIHOU <- apply(hCIHO, 2, qu)
 
-numHR <- hCIHR*exp(-chCIHR)
-denHR <- exp(-chCIHR)
+# Splines model
+fit <- bshazard(Surv(df$time, df$status) ~ 1, data = df, nbin = 100, degree = 3, verbose = FALSE)
 
-hpredHR <- colMeans(numHR)/colMeans(denHR)
-
-
-hCIHRL <- apply(hCIHR, 2, ql)
-hCIHRU <- apply(hCIHR, 2, qu)
-
-qCIHRL <- apply(qCIHR, 2, ql)
-qCIHRU <- apply(qCIHR, 2, qu)
 
 
 # Plots
+curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard", 
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.08))
 
-# Weibull
-plot(tvec,  hW, type = "l", ylim = c(0,0.15), xlab = "Time", ylab = "Predictive Hazard", 
-     cex.axis = 1.5, cex.lab = 1.5, lwd =1)
-points(tvec,  hCIWL, col = "gray", type = "l")
-points(tvec,  hCIWU, col = "gray", type = "l")
-polygon(c(tvec, rev(tvec)), c(hCIWL[order(tvec)], rev(hCIWU[order(tvec)])),
-        col = "gray", border = NA)
-points(tvec,  hW,type = "l", col = "black", lwd = 1)
 
-# PGW
-points(tvec,  hPGWs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
-       cex.axis = 1.5, cex.lab = 1.5, lwd =1, lty = 2)
-points(tvec,  hCIPGWL, col = "gray", type = "l")
-points(tvec,  hCIPGWU, col = "gray", type = "l")
-polygon(c(tvec, rev(tvec)), c(hCIPGWL[order(tvec)], rev(hCIPGWU[order(tvec)])),
+plot(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
+       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.1))
+points(tvec,  hCIHOL, col = "gray", type = "l")
+points(tvec,  hCIHOU, col = "gray", type = "l")
+polygon(c(tvec, rev(tvec)), c(hCIHOL[order(tvec)], rev(hCIHOU[order(tvec)])),
         col = "gray", border = NA)
-points(tvec,  hPGWs,type = "l", col = "black", lwd = 1, lty =2)
-
-# Hazard-Response
-points(tvec,  hpredHR, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
-       cex.axis = 1.5, cex.lab = 1.5, lwd =1, lty = 3)
-points(tvec,  hCIHRL, col = "gray", type = "l")
-points(tvec,  hCIHRU, col = "gray", type = "l")
-polygon(c(tvec, rev(tvec)), c(hCIHRL[order(tvec)], rev(hCIHRU[order(tvec)])),
-        col = "gray", border = NA)
-points(tvec,  hpredHR,type = "l", col = "black", lwd = 1, lty =3)
-points(tvec,  hPGWs,type = "l", col = "black", lwd = 1, lty =2)
-legend("bottomright", legend = c("Weibull", "PGW", "HR"), lty = c(1,2,3), 
-       lwd = c(2,2,2), col = c("black","black","black"))
+points(fit$time, fit$hazard, type='l', lwd = 2, lty = 2, ylim = c(0,0.25), col = "darkgray")
+lines(fit$time, fit$lower.ci, lty = 2, lwd = 1, col = "gray")
+lines(fit$time, fit$upper.ci, lty = 2, lwd = 1, col = "gray")
+points(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
+       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1)
+legend("bottomright", legend = c("HO", "BS"), lty = c(1,2),  
+       lwd = c(2,2), col = c("black","darkgray")) 
 
 
 
 ``` 
 
-
-## Predictive Hazard vs. Response
-
-```{r}
-# Hazard vs. Response
-plot(tvec,  hpredHR, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
-       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.1))
-
-qpredHR <- colMeans(qCIHR)
-
-points(tvec,  qpredHR, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
-       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 2)
-
-legend("bottomright", legend = c("Hazard","Response"), lty = c(1,2), 
-       lwd = c(2,2), col = c("black","black"))
-```
 
 ## Predictive Survival functions 
 
@@ -655,97 +643,7 @@ predsPGW <- Vectorize(function(t){
 }) 
 
 
-# Predictive Hazard-Response survival: Solver solution 
-predsHR <- colMeans(denHR)
 
-
-# Weibull 
-SCIW <- matrix(0, ncol = ntvec, nrow = length(ind)) 
-
-for(j in 1:length(ind)){ 
-  for(k in 1:ntvec){ 
-    SCIW[j,k ] <- exp(-chweibull( tvec[k],sigmapW[j], nupW[j])) 
-  } 
-}
-
-SW <-  predsW(tvec) 
-
-SCIWL <- apply(SCIW, 2, ql) 
-SCIWU <- apply(SCIW, 2, qu) 
-
-# PGW
-
-SCIPGW <- matrix(0, ncol = ntvec, nrow = length(ind)) 
-
-for(j in 1:length(ind)){ 
-  for(k in 1:ntvec){ 
-    SCIPGW[j,k ] <- exp(-chpgw( tvec[k],sigmapPGW[j], nupPGW[j], gammapPGW[j])) 
-  } 
-}
-
-SPGW <-  predsPGW(tvec) 
-
-SCIPGWL <- apply(SCIPGW, 2, ql) 
-SCIPGWU <- apply(SCIPGW, 2, qu) 
-
-
-# Hazard-Response 
-SpredCIHR <- colMeans(denHR) 
-
-SCIHRL <- apply(SCIHR, 2, ql) 
-SCIHRU <- apply(SCIHR, 2, qu) 
-
-# Plots (no credible envelopes) 
-
-# Weibull 
-plot(tvec,  SW, type = "l", ylim = c(0,1), xlab = "Time", ylab = "Predictive Survival",  
-     cex.axis = 1.5, cex.lab = 1.5, lwd =1) 
-
-# PGW 
-points(tvec,  SPGW, type = "l", ylim = c(0,1), xlab = "Time", ylab = "Predictive Survival",  
-       cex.axis = 1.5, cex.lab = 1.5, lwd =1, lty = 2) 
-
-# Hazard-Response 
-points(tvec,  SpredCIHR, type = "l", ylim = c(0,1), xlab = "Time", ylab = "Predictive Survival",  
-       cex.axis = 1.5, cex.lab = 1.5, lwd =1, lty = 3) 
-
-legend("topright", legend = c("Weibull", "PGW", "HR"), lty = c(1,2,3),  
-       lwd = c(2,2,2), col = c("black","black","black")) 
-
-
-# Plots (with credible envelopes) 
-
-# Weibull 
-plot(tvec,  SW, type = "l", ylim = c(0,1), xlab = "Time", ylab = "Predictive Survival",  
-     cex.axis = 1.5, cex.lab = 1.5, lwd =1) 
-points(tvec,  SCIWL, col = "gray", type = "l") 
-points(tvec,  SCIWU, col = "gray", type = "l") 
-polygon(c(tvec, rev(tvec)), c(SCIWL[order(tvec)], rev(SCIWU[order(tvec)])), 
-        col = "gray", border = NA) 
-points(tvec,  SW,type = "l", col = "black", lwd = 1) 
-
-# PGW 
-points(tvec,  SPGW, type = "l", ylim = c(0,1), xlab = "Time", ylab = "Predictive Survival",  
-       cex.axis = 1.5, cex.lab = 1.5, lwd =1, lty = 2) 
-points(tvec,  SCIPGWL, col = "gray", type = "l") 
-points(tvec,  SCIPGWU, col = "gray", type = "l") 
-polygon(c(tvec, rev(tvec)), c(SCIPGWL[order(tvec)], rev(SCIPGWU[order(tvec)])), 
-        col = "gray", border = NA) 
-points(tvec,  SPGW,type = "l", col = "black", lwd = 1, lty =2) 
-
-# Hazard-Response 
-points(tvec,  SpredCIHR, type = "l", ylim = c(0,1), xlab = "Time", ylab = "Predictive Survival",  
-       cex.axis = 1.5, cex.lab = 1.5, lwd =1, lty = 3) 
-points(tvec,  SCIHRL, col = "gray", type = "l") 
-points(tvec,  SCIHRU, col = "gray", type = "l") 
-polygon(c(tvec, rev(tvec)), c(SCIHRL[order(tvec)], rev(SCIHRU[order(tvec)])), 
-        col = "gray", border = NA) 
-points(tvec,  SpredCIHR,type = "l", col = "black", lwd = 1, lty =3) 
-
-points(tvec,  SPGW,type = "l", col = "black", lwd = 1, lty =2) 
-
-legend("topright", legend = c("Weibull", "PGW", "HR"), lty = c(1,2,3),  
-       lwd = c(2,2,2), col = c("black","black","black")) 
 
 ```
 
