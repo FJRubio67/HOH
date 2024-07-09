@@ -554,13 +554,14 @@ curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard",
 
 
 # Comparison with Weibull and PGW
+pdf(file = "predhaz.pdf", width = 6, height = 5)
 curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard", 
       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.125))
 curve(fithw, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
 curve(fithpgw, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
 legend("topleft", legend = c("HO","Weibull", "PGW"), lty = c(1,2,3), 
        lwd = c(2,2,2), col = c("black","gray","gray"))
-
+dev.off()
 
 ## -----------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------- 
@@ -592,14 +593,17 @@ predsHO <- Vectorize(function(t){
 })
 
 # Comparison: survival functions
+pdf(file = "predsurv.pdf", width = 6, height = 5)
 curve(predsHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Survival", 
       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,1))
 curve(predsW, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
 curve(predsPGW, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
-points(km$time, km$surv, type = "l", col = "green", lwd = 2, lty = 1)
+points(km$time, km$surv, type = "l", col = "gray", lwd = 2, lty = 1)
+curve(predsHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Survival", 
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,1),add=TRUE)
 legend("topright", legend = c("HO","Weibull","PGW","KM"), lty = c(1,2,3,1), 
-       lwd = c(2,2,2,2), col = c("black","gray","gray","green"))
-
+       lwd = c(2,2,2,2), col = c("black","gray","gray","gray"))
+dev.off()
 
 ## ----message=FALSE------------------------------------------------------------------------------------------------------------------
 
