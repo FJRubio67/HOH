@@ -151,6 +151,8 @@ Spp <- (Stt - 2*St + S0)/(dt^2)
 h00 <- Sp/St
 r00 <- h00^2 - Spp/St
 
+c(h00,r00)
+
 # Initial point
 initHO <- c(0.1,0,0)
 
