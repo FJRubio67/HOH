@@ -363,7 +363,7 @@ p_eta <- Vectorize(function(t) dgamma(t, shape = 4, scale = 0.25))
 curve(p_eta,0,2, n = 1000, xlab = ~eta, ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_w0 <- Vectorize(function(t) dgamma(t, shape = 2, scale = 1))
+p_w0 <- Vectorize(function(t) dgamma(t, shape = 10, scale = 0.1))
 curve(p_w0,0,10, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
