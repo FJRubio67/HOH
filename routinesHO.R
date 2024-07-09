@@ -603,18 +603,19 @@ log_postHO <- function(par) {
   
   # Log prior
   
+  consw0 <- 2*pi/5
   
   log_prior <- -dgamma(eta,
-                       shape = 0.5,
-                       scale = 1,
+                       shape = 4,
+                       scale = 0.25,
                        log = TRUE) -
     dgamma(w0,
-           shape = 2,
-           scale = 1,
+           shape = 4,
+           scale = 0.25*2*pi/(5*sqrt(abs(eta^2-1))),
            log = TRUE) -
     dgamma(hb,
            shape = 0.1,
-           scale = 0.1,
+           scale = 1,
            log = TRUE)
   
   # Log-Jacobian
