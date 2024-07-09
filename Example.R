@@ -359,7 +359,7 @@ curve(p_gammaPGW,0,15, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 #--------------------------------------------------------------------------------------------------
 
 par(mfrow = c(2,2))
-p_eta <- Vectorize(function(t) dgamma(t, shape = 0.5, scale = 1))
+p_eta <- Vectorize(function(t) dgamma(t, shape = 4, scale = 0.25))
 curve(p_eta,0,2, n = 1000, xlab = ~eta, ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
@@ -367,7 +367,7 @@ p_w0 <- Vectorize(function(t) dgamma(t, shape = 2, scale = 1))
 curve(p_w0,0,10, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_hb <- Vectorize(function(t) dgamma(t, shape = 0.1, scale = 0.1))
+p_hb <- Vectorize(function(t) dgamma(t, shape = 0.1, scale = 1))
 curve(p_hb,0,0.1, n = 1000, xlab = expression(h_b), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
@@ -430,7 +430,7 @@ curve(p_eta,0,1, n = 1000, xlab = ~lambda, ylab = "Prior Density",
 
 plot(density(w0p), main = "", xlab = expression(w_0), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_w0,0.5,2, n = 1000, xlab = expression(w_0), ylab = "Prior Density", 
+curve(p_w0,0.5,2.5, n = 1000, xlab = expression(w_0), ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
 plot(density(hbp), main = "", xlab = expression(h_b), ylab = "Density",

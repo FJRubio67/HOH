@@ -610,8 +610,8 @@ log_postHO <- function(par) {
                        scale = 0.25,
                        log = TRUE) -
     dgamma(w0,
-           shape = 4,
-           scale = 0.25*2*pi/(5*sqrt(abs(eta^2-1))),
+           shape = 10,
+           scale = 0.1*2*pi/(5*sqrt(abs(eta^2-1))),
            log = TRUE) -
     dgamma(hb,
            shape = 0.1,
