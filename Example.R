@@ -151,8 +151,6 @@ Spp <- (Stt - 2*St + S0)/(dt^2)
 h00 <- Sp/St
 r00 <- h00^2 - Spp/St
 
-c(h00,r00)
-
 # Initial point
 initHO <- c(0.1,0,0)
 
@@ -359,16 +357,23 @@ curve(p_gammaPGW,0,15, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 #--------------------------------------------------------------------------------------------------
 
 par(mfrow = c(2,2))
-p_eta <- Vectorize(function(t) dgamma(t, shape = 4, scale = 0.25))
-curve(p_eta,0,2, n = 1000, xlab = ~eta, ylab = "Prior Density",
+p_eta <- Vectorize(function(w0){
+  
+ tempf <- Vectorize(function(eta) dgamma(w0, shape = 10,
+       scale = 0.1*2*pi/(5*sqrt(abs(eta^2-1))))*dgamma(eta, shape = 4, scale = 0.25))
+
+out <- integrate(tempf,0,Inf)$value
+return(out)
+})
+curve(p_eta,0,5, n = 1000, xlab = ~eta, ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 p_w0 <- Vectorize(function(t) dgamma(t, shape = 10, scale = 0.1))
-curve(p_w0,0,10, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
+curve(p_w0,0,5, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 p_hb <- Vectorize(function(t) dgamma(t, shape = 0.1, scale = 1))
-curve(p_hb,0,0.1, n = 1000, xlab = expression(h_b), ylab = "Prior Density",
+curve(p_hb,0,0.2, n = 1000, xlab = expression(h_b), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 
@@ -412,9 +417,9 @@ ind <- seq(burn,NS,thin)
 
 
 # Summaries
-summHR <- apply(exp(chainHO[ind,1:3]),2,summary)
-colnames(summHR) <- c("eta","w_0","h_b")
-kable(summHR, digits = 3)
+summHO <- apply(exp(chainHO[ind,1:3]),2,summary)
+colnames(summHO) <- c("eta","w_0","h_b")
+kable(summHO, digits = 3)
 
 # KDEs
 etap <- exp(chainHO[,1][ind])
@@ -430,7 +435,7 @@ curve(p_eta,0,1, n = 1000, xlab = ~lambda, ylab = "Prior Density",
 
 plot(density(w0p), main = "", xlab = expression(w_0), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_w0,0.5,2.5, n = 1000, xlab = expression(w_0), ylab = "Prior Density", 
+curve(p_w0,0.5,2, n = 1000, xlab = expression(w_0), ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
 plot(density(hbp), main = "", xlab = expression(h_b), ylab = "Density",
