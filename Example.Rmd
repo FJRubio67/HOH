@@ -403,7 +403,11 @@ curve(p_gammaPGW,0,15, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 #--------------------------------------------------------------------------------------------------
 
 par(mfrow = c(2,2))
-p_eta <- Vectorize(function(w0){
+p_eta <- Vectorize(function(t) dgamma(t, shape = 4, scale = 0.25))
+curve(p_eta,0,3, n = 1000, xlab = ~eta, ylab = "Prior Density",
+      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
+
+p_w0 <- Vectorize(function(w0){
   
  tempf <- Vectorize(function(eta) dgamma(w0, shape = 10,
        scale = 0.1*2*pi/(5*sqrt(abs(eta^2-1))))*dgamma(eta, shape = 4, scale = 0.25))
@@ -411,10 +415,6 @@ p_eta <- Vectorize(function(w0){
 out <- integrate(tempf,0,Inf)$value
 return(out)
 })
-curve(p_eta,0,5, n = 1000, xlab = ~eta, ylab = "Prior Density",
-      cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
-
-p_w0 <- Vectorize(function(t) dgamma(t, shape = 10, scale = 0.1))
 curve(p_w0,0,5, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
@@ -481,7 +481,7 @@ curve(p_eta,0,1, n = 1000, xlab = ~lambda, ylab = "Prior Density",
 
 plot(density(w0p), main = "", xlab = expression(w_0), ylab = "Density",
      cex.axis = 1.5, cex.lab = 1.5, lwd = 2)
-curve(p_w0,0.5,2, n = 1000, xlab = expression(w_0), ylab = "Prior Density", 
+curve(p_w0,0.5,2.5, n = 1000, xlab = expression(w_0), ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
 plot(density(hbp), main = "", xlab = expression(h_b), ylab = "Density",
@@ -555,21 +555,6 @@ hCIPGWU <- apply(hCIPGW, 2, qu)
 
 # Harmonic Oscillator
 
-Ap <- vector()
-phip <- vector()
-
-for(i in 1:length(ind)) {
-  newpar <- rep2ap(etap[i], w0p[i], hbp[i], h00, r00)
-  
-  Ap[i] <- as.numeric(newpar$A)
-  phip[i] <- as.numeric(newpar$phi)
-}
-
-
-hist(Ap)
-hist(phip)
-
-
 # Predictive HO hazard
 predhHO <- Vectorize(function(t){
   num <- den <- temp <- vector()
@@ -604,19 +589,26 @@ fit <- bshazard(Surv(df$time, df$status) ~ 1, data = df, nbin = 100, degree = 3,
 
 
 
-# Plots
-curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard", 
+# Predictive hazard plot
+curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard",
+      main = "Harmonic Oscillator",
       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.08))
 
-
-plot(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
-       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.1))
 points(tvec,  hCIHOL, col = "gray", type = "l")
 points(tvec,  hCIHOU, col = "gray", type = "l")
 polygon(c(tvec, rev(tvec)), c(hCIHOL[order(tvec)], rev(hCIHOU[order(tvec)])),
         col = "gray", border = NA)
-points(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
-       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1)
+curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard", 
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.08), add = TRUE)
+
+
+# Comparison with Weibull and PGW
+curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard", 
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.125))
+curve(fithw, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
+curve(fithpgw, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
+legend("topleft", legend = c("HO","Weibull", "PGW"), lty = c(1,2,3), 
+       lwd = c(2,2,2), col = c("black","gray","gray"))
 ``` 
 
 
@@ -642,8 +634,23 @@ predsPGW <- Vectorize(function(t){
 }) 
 
 
+# Predictive HO Survival
+predsHO <- Vectorize(function(t){
+  temp <- vector()
+  for(i in 1:length(ind)){
+    temp[i] <- exp(-chHO( t, etap[i], w0p[i], hbp[i], h00, r00 ))
+  }
+  return(mean(temp)) 
+})
 
-
+# Comparison: survival functions
+curve(predsHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Survival", 
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,1))
+curve(predsW, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
+curve(predsPGW, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
+points(km$time, km$surv, type = "l", col = "green", lwd = 2, lty = 1)
+legend("topright", legend = c("HO","Weibull","PGW","KM"), lty = c(1,2,3,1), 
+       lwd = c(2,2,2,2), col = c("black","gray","gray","green"))
 ```
 
 
@@ -651,16 +658,17 @@ predsPGW <- Vectorize(function(t){
 Now, we present a comparison of the estimated hazard function with that obtained with the R command `bshazard` from the R package `bshazard`. This estimator is based on B-Splines. See [bshazard: Nonparametric Smoothing of the Hazard Function](https://cran.r-project.org/package=bshazard).
 
 ```{r message=FALSE}
-# fitting the estimator
-fit <- bshazard(Surv(df$time, df$status) ~ 1, data = df, nbin = 100, degree = 3, verbose = FALSE)
+
 ```
 
 ```{r}
+
+# fitting the estimator
+fit <- bshazard(Surv(df$time, df$status) ~ 1, data = df, nbin = 100, degree = 3, verbose = FALSE)
+
 # Hazard 
-
-
 plot(tvec,  hHOs, type = "l", xlab = "Time", ylab = "Predictive Hazard", 
-       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.1))
+       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.125))
 points(tvec,  hCIHOL, col = "gray", type = "l")
 points(tvec,  hCIHOU, col = "gray", type = "l")
 polygon(c(tvec, rev(tvec)), c(hCIHOL[order(tvec)], rev(hCIHOU[order(tvec)])),
