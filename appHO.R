@@ -14,7 +14,7 @@ source("routinesHO.R")
 # minimum time for plot
 #tmin = -100
 # maximum time for plot
-zmax = 100
+tmax = 100
 # Minimum value of parameter 1
 p1min = 0
 # Minimum value of parameter 2
@@ -45,7 +45,7 @@ uiHO <- fluidPage(
   # Sidebar for parameter selection
   sidebarLayout(
     sidebarPanel(
-      sliderInput("z", "z", min = 0, max = zmax, value = 10),
+      sliderInput("t", "t", min = 0, max = tmax, value = 10),
       sliderInput("par1", "Parameter 1 (eta)", min = p1min, max = p1max, value = 1, step = 0.1),
       sliderInput("par2", "Parameter 2 (w0)", min = p2min, max = p2max, value = 1, step = 0.1),
       sliderInput("par3", "Parameter 3 (hb)", min = p3min, max = p3max, value = 1, step = 0.1),
@@ -62,12 +62,12 @@ uiHO <- fluidPage(
 
 serverHO <- function(input, output) {
   output$functionPlot <- renderPlot({
-    zz = seq(from = 0, to = input$z, length = 1000)
+    tt = seq(from = 0, to = input$t, length = 1000)
     # Calculate function values for current parameters
-    y1 <- hHO(zz, input$par1, input$par2, input$par3, input$par4, input$par5)
+    y1 <- hHO(tt, input$par1, input$par2, input$par3, input$par4, input$par5)
     
     # Plot the function
-    plot(zz, y1, type = "l", 
+    plot(tt, y1, type = "l", 
          main = paste("h(t, eta = ", input$par1, 
                       ", w0 = ", input$par2, 
                       ", hb = ", input$par3,
