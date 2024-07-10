@@ -1,0 +1,84 @@
+################################################################################
+# An R shiny to illustrate the shapes of the sinh-arcsinh function
+################################################################################
+
+# Required packages
+library(shiny)
+
+# Routines
+
+source("routinesHO.R")
+
+
+
+# minimum time for plot
+#tmin = -100
+# maximum time for plot
+zmax = 100
+# Minimum value of parameter 1
+p1min = 0
+# Minimum value of parameter 2
+p2min = 0
+# Minimum value of parameter 3
+p3min = 0
+# Minimum value of parameter 4
+p4min = 0
+# Minimum value of parameter 5
+p5min = -10
+
+# Maximum value of parameter 1
+p1max = 10
+# Maximum value of parameter 2
+p2max = 10
+# Maximum value of parameter 3
+p3max = 10
+# Maximum value of parameter 4
+p4max = 10
+# Maximum value of parameter 5
+p5max = 10
+
+
+uiHO <- fluidPage(
+  # Title
+  titlePanel("Harmonic Oscillator"),
+  
+  # Sidebar for parameter selection
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("z", "z", min = 0, max = zmax, value = 10),
+      sliderInput("par1", "Parameter 1 (eta)", min = p1min, max = p1max, value = 1, step = 0.1),
+      sliderInput("par2", "Parameter 2 (w0)", min = p2min, max = p2max, value = 1, step = 0.1),
+      sliderInput("par3", "Parameter 3 (hb)", min = p3min, max = p3max, value = 1, step = 0.1),
+      sliderInput("par4", "Parameter 4 (h0)", min = p4min, max = p4max, value = 1, step = 0.1),
+      sliderInput("par5", "Parameter 5 (r0)", min = p5min, max = p5max, value = 0, step = 0.1)
+    ),
+    
+    # Main panel for plot
+    mainPanel(
+      plotOutput("functionPlot")
+    )
+  )
+)
+
+serverHO <- function(input, output) {
+  output$functionPlot <- renderPlot({
+    zz = seq(from = 0, to = input$z, length = 1000)
+    # Calculate function values for current parameters
+    y1 <- hHO(zz, input$par1, input$par2, input$par3, input$par4, input$par5)
+    
+    # Plot the function
+    plot(zz, y1, type = "l", 
+         main = paste("h(t, eta = ", input$par1, 
+                      ", w0 = ", input$par2, 
+                      ", hb = ", input$par3,
+                      ", h0 = ", input$par4,
+                      ", r0 = ", input$par5, ")", sep=""),
+         xlab = "t", ylab = "h(t)",
+         cex.lab = 1.5, cex.axis = 1.5, lwd = 2)
+  })
+}
+
+# Run the app
+shinyApp(ui = uiHO, server = serverHO)
+
+

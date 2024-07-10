@@ -176,7 +176,7 @@ haz <- hb + exp(-w0 * eta * t) * (0.5 * (h0 - hb + a) * exp(w1 * t) +
   
   # Critically damped
   if (eta == 1) {
-    haz <- hb + (h0 - hb + t * (r0 + w0 * (h0 - hb))) * exp(-w0 * tv)
+    haz <- hb + (h0 - hb + t * (r0 + w0 * (h0 - hb))) * exp(-w0 * t)
   }
   
 
