@@ -384,6 +384,15 @@ plotSHOhaz <- function(par,
 #   
 # }
 
+# Critical values
+
+crit <- function(eta,w0,hb,h0,r0){
+  w1 <- w0 * sqrt(abs(eta ^ 2 - 1))
+  mu <- w1 / (w0 * eta)
+  a <- (h0-hb)/mu + r0/w1
+ critp <- (h0 - hb - a)  / ((h0 - hb + a)*(w1-w0*eta))
+ return(critp)
+}
 
 # Support function on the log scale
 # Fixed initial conditions
@@ -412,9 +421,8 @@ SupportHOFICS <- function(par) {
   }
   
   if (eta > 1) {
-    mu <- w1/(w0*eta)
     a <- (h0-hb)/mu + r0/w1
-    test <- ((h0 - hb - a) * (w1+w0*eta)) / ((h0 - hb + a)*(w1-w0*eta))
+    test <- (h0 - hb - a)  / ((h0 - hb + a)*(w1-w0*eta))
     
     if (r0 >= 0){
       if (test <= 0){
