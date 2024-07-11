@@ -66,17 +66,13 @@ serverHO <- function(input, output) {
     # Calculate function values for current parameters
     y1 <- hHO(tt, input$par1, input$par2, input$par3, input$par4, input$par5)
     
-    crit0 <- round(crit(input$par1, input$par2, input$par3, input$par4, input$par5), digits = 2)
-    hcrit <- round(hHO(crit0, input$par1, input$par2, input$par3, input$par4, input$par5), digits = 2)
-
-    
-    # Plot the function
+     # Plot the function
     plot(tt, y1, type = "l", 
          main = paste("h(t, eta = ", input$par1, 
                       ", w0 = ", input$par2, 
                       ", hb = ", input$par3,
                       ", h0 = ", input$par4,
-                      ", r0 = ", input$par5, "),", " crit = ", crit0, ", hcrit = ", hcrit, sep=""),
+                      ", r0 = ", input$par5, "),", sep=""),
          xlab = "t", ylab = "h(t)",
          cex.lab = 1.5, cex.axis = 1.5, lwd = 2)
   })
