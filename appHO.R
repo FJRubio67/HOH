@@ -40,7 +40,7 @@ p5max = 10
 
 uiHO <- fluidPage(
   # Title
-  titlePanel("Harmonic Oscillator"),
+  titlePanel("Harmonic Oscillator Hazard"),
   
   # Sidebar for parameter selection
   sidebarLayout(

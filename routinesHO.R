@@ -142,9 +142,17 @@ rep2ap <- function(eta, w0, hb, h0, r0) {
   return(list(A = A, phi = phi))
 }
 
+######################################################################################
+######################################################################################
+######################################################################################
+# Harmonic Oscillator ODE
+######################################################################################
+######################################################################################
+######################################################################################
+
 
 #-----------------------------------------------------------------------------
-# Harmonic Oscillator ODE Hazard Function: Analytic solution
+# Hazard function
 #-----------------------------------------------------------------------------
 # t: time (positive)
 # eta: shape parameter (positive)
@@ -179,14 +187,12 @@ haz <- hb + exp(-w0 * eta * t) * (0.5 * (h0 - hb + a) * exp(w1 * t) +
     haz <- hb + (h0 - hb + t * (r0 + w0 * (h0 - hb))) * exp(-w0 * t)
   }
   
-
     return(haz)
-  
 }
 
 
 #-----------------------------------------------------------------------------
-# Harmonic Oscillator ODE Cumulative Hazard Function: Analytic solution
+# Cumulative hazard function
 #-----------------------------------------------------------------------------
 # t: time (positive)
 # eta: shape parameter (positive)
@@ -231,7 +237,7 @@ chHO <- function(t, eta, w0, hb, h0, r0) {
 }
 
 #-----------------------------------------------------------------------------
-# Shifted Harmonic Oscillator ODE Probability Density Function: Analytic solution
+# Probability Density Function
 #-----------------------------------------------------------------------------
 # t: time (positive)
 # tau: shape parameter
@@ -246,7 +252,7 @@ dHO  <- function(t, eta, w0, hb, h0, r0) {
 }
 
 #-----------------------------------------------------------------------------
-# Shifted Harmonic Oscillator ODE random number generation: Analytic solution
+# Random number generation
 #-----------------------------------------------------------------------------
 # n: number of simulations
 # tau: shape parameter
@@ -269,122 +275,9 @@ rHO <- function(n, interval, eta, w0, hb, h0, r0) {
   return(as.vector(out))
 }
 
-
-
-
-######################################################################################################
-# Function to plot the hazard function
-######################################################################################################
-# par: parameters
-# xl: lower limit for plot - x axis
-# xu: upper limit for plot - y axis
-# yl: lower limit for plot - y axis
-# yu: upper limit for plot - y axis
-# param: parametrization. "original" = c(tau, w2, hb, h0, r0), repar = c(tau, w2, hb, A, phi)
-# n: number of points
-
-plotSHOhaz <- function(par,
-                       xl,
-                       xu,
-                       yl,
-                       yu,
-                       add.plot = FALSE,
-                       col = "black",
-                       lty = 1,
-                       lwd = 2,
-                       param = "original",
-                       n = 100) {
-  if (param == "original") {
-    haz <- Vectorize(function(t)
-      hHO(t, par[1], par[2], par[3], par[4], par[5]))
-  }
-  if (param == "repar") {
-    reparam <- rep2ap(par[1], par[2], par[3], par[4], par[5])
-    A <- reparam$A
-    phi <- reparam$phi
-    haz <- Vectorize(function(t)
-      hHO(t, par[1], par[2], par[3], A, phi))
-  }
-  curve(
-    haz,
-    xl,
-    xu,
-    ylim = c(yl, yu),
-    col = col,
-    cex.axis = 1.25,
-    cex.lab = 1.25,
-    ylab = "h(t)",
-    xlab = "t",
-    lty = lty,
-    lwd = lwd,
-    add = add.plot,
-    n = n
-  )
-}
-
-
-
-
-######################################################################################
-######################################################################################
-######################################################################################
-# Shifted Harmonic Oscillator
-######################################################################################
-######################################################################################
-######################################################################################
-
-
-# Support function on the log scale
-# SupportHO <- function(par) {
-#   # Parameters
-#   eta <- exp(par[1])
-#   w0 <- exp(par[2])
-#   hb <- exp(par[3])
-#   
-#   h0 <- exp(par[4])
-#   r0 <- par[5]
-#   
-#   # Additional required parameters
-#   w1 <- w0 * sqrt(abs(eta ^ 2 - 1))
-#   mu <- w1 / (w0 * eta)
-#   phi <- rep2ap(eta, w0, hb, h0, r0)$phi
-#   
-#   # HO Hazard function with parameters given by par
-#   temph <- Vectorize(function(t)
-#     hHO(t, eta, w0, hb, h0, r0))
-#   
-#   if (eta < 1) {
-#     ts <- (atan(mu) - phi + seq(0, 1, by = 1) * pi) / w1
-#     hs <- temph(ts)
-#     out <- ifelse(any(hs <= 0), FALSE, TRUE)
-#   }
-#   
-#   if (eta > 1) {
-#     if (r0 >= 0)
-#       out <- TRUE
-#     if (r0 < 0) {
-#       test <- (h0 - hb - a) / (h0 - hb + a)
-#       if (test <= 0)
-#         out = FALSE
-#       if (test > 0) {
-#         t_hat <- 0.5 * w0 * eta * log(test) / mu
-#         
-#         hs <- temph(c(0.5 * t_hat, t_hat))
-#         
-#         out <- ifelse(any(hs <= 0), FALSE, TRUE)
-#       }
-#     }
-#     
-#   }
-#   if (eta == 1){
-#     out <- FALSE
-#   }
-#   
-#   return(out)
-#   
-# }
-
-# Critical value, test, and hazard at critical value
+#-----------------------------------------------------------------------------
+# Critical value, test for critical value, and hazard at critical value
+#-----------------------------------------------------------------------------
 
 crit <- function(eta,w0,hb,h0,r0){
   w1 <- w0 * sqrt(abs(eta ^ 2 - 1))
@@ -397,9 +290,13 @@ crit <- function(eta,w0,hb,h0,r0){
  return(out)
 }
 
+#-----------------------------------------------------------------------------
 # Support function on the log scale
 # Fixed initial conditions
-SupportHOFICS <- function(par) {
+#-----------------------------------------------------------------------------
+# par = (log(eta), log(w0), log(hb))
+
+SupportHO <- function(par) {
   # Parameters
   eta <- exp(par[1])
   w0 <- exp(par[2])
@@ -462,7 +359,7 @@ SupportHOFICS <- function(par) {
 
 
 #--------------------------------------------------------------------------------------------------
-# Shifted Harmonic Oscillator ODE -log-likelihood function: Analytic solution
+# Harmonic Oscillator ODE -log-likelihood function
 # Fixed initial conditions
 #--------------------------------------------------------------------------------------------------
 
@@ -472,7 +369,7 @@ log_likHO <- function(par) {
   hb <- exp(par[3])
   
   
-  cond <- SupportHOFICS(par)
+  cond <- SupportHO(par)
   
   if (!cond)
     log_lik <- Inf
@@ -492,7 +389,7 @@ log_likHO <- function(par) {
 
 
 #--------------------------------------------------------------------------------------------------
-# Shifted Harmonic Oscillator ODE -log-posterior function: Analytic solution
+# Harmonic Oscillator ODE -log-posterior function: Analytic solution
 # Fixed initial conditions
 #--------------------------------------------------------------------------------------------------
 
@@ -502,7 +399,7 @@ log_postHO <- function(par) {
   hb <- exp(par[3])
   
   
-  cond <- SupportHOFICS(par)
+  cond <- SupportHO(par)
   
   if (!cond)
     log_lik <- Inf
@@ -516,7 +413,7 @@ log_postHO <- function(par) {
     log_lik <- -ll_haz + ll_chaz
   }
   
-  # Log prior
+  # Log prior (conditional prior: see paper)
   
   consw0 <- 2*pi/5
   
