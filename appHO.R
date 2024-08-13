@@ -1,5 +1,5 @@
 ################################################################################
-# An R shiny to illustrate the shapes of the sinh-arcsinh function
+# An R shiny to illustrate the shapes of the harmonic oscillator hazard function
 ################################################################################
 
 # Required packages
