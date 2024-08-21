@@ -6,4 +6,4 @@ This repository contains information about the project `HOH`, which concerns the
 
 - The code `appHO.R` produces a shiny app to visualise the shapes of the harmonic oscillator hazard function for different values of the parameters.
 - The code `routinesHO.R` contains the functions required in all the examples presented in this repository.
-- The code `example.R` contains a real data example. The same example is also available in R Markdown (`example.Rmd` and `example.html`). The output of this R code can also be found at:
+- The code `Example.R` contains a real data example (the output of this file is stored in `Example.RData`). The same example is also available in R Markdown in the files `Example.Rmd` and `Example.html`. 
