@@ -413,21 +413,18 @@ log_postHO <- function(par) {
     log_lik <- -ll_haz + ll_chaz
   }
   
-  # Log prior (conditional prior: see paper)
-  
-  consw0 <- 2*pi/5
-  
+
   log_prior <- -dgamma(eta,
-                       shape = 4,
-                       scale = 0.25,
+                       shape = 0.001,
+                       scale = 1/0.001,
                        log = TRUE) -
     dgamma(w0,
-           shape = 10,
-           scale = 0.1*2*pi/(5*sqrt(abs(eta^2-1))),
+           shape = 0.001,
+           scale = 1/0.001,
            log = TRUE) -
     dgamma(hb,
-           shape = 0.1,
-           scale = 1,
+           shape = 0.001,
+           scale = 1/0.001,
            log = TRUE)
   
   # Log-Jacobian
@@ -440,3 +437,54 @@ log_postHO <- function(par) {
    
   return(as.numeric(log_post0))
 }
+
+
+
+# log_postHO <- function(par) {
+#   eta <- exp(par[1])
+#   w0 <- exp(par[2])
+#   hb <- exp(par[3])
+#   
+#   
+#   cond <- SupportHO(par)
+#   
+#   if (!cond)
+#     log_lik <- Inf
+#   
+#   if (cond) {
+#     # Terms in the log log likelihood function
+#     ll_haz <- sum(log(hHO(t_obs, eta, w0, hb, h00, r00)))
+#     
+#     ll_chaz <- sum(chHO(survtimes, eta, w0, hb, h00, r00))
+#     
+#     log_lik <- -ll_haz + ll_chaz
+#   }
+#   
+#   # Log prior (conditional prior: see paper)
+#   
+#   consw0 <- 2*pi/5
+#   
+#   log_prior <- -dgamma(eta,
+#                        shape = 4,
+#                        scale = 0.25,
+#                        log = TRUE) -
+#     dgamma(w0,
+#            shape = 10,
+#            scale = 0.1*2*pi/(5*sqrt(abs(eta^2-1))),
+#            log = TRUE) -
+#     dgamma(hb,
+#            shape = 0.1,
+#            scale = 1,
+#            log = TRUE)
+#   
+#   # Log-Jacobian
+#   
+#   log_jacobian <- -log(eta) - log(w0) - log(hb)
+#   
+#   # log posterior
+#   
+#   log_post0 <- log_lik + log_prior + log_jacobian
+#   
+#   return(as.numeric(log_post0))
+# }
+
