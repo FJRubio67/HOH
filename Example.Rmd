@@ -15,7 +15,7 @@ This document provides codes and information about the *Damped Harmonic Oscillat
 
 ## The damped harmonic oscillator model
 
-The hazard-Response model is defined through the second order ODE:
+The harmonic oscillator hazard model is defined through the second order ODE:
 \begin{equation}
 h''(t) + 2 \eta w_0 h'(t) + w^2_0 (h(t) - h_b) = 0,
 \label{eq:harmonic_osc}    
@@ -403,23 +403,16 @@ curve(p_gammaPGW,0,15, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 #--------------------------------------------------------------------------------------------------
 
 par(mfrow = c(2,2))
-p_eta <- Vectorize(function(t) dgamma(t, shape = 4, scale = 0.25))
-curve(p_eta,0,3, n = 1000, xlab = ~eta, ylab = "Prior Density",
+p_eta <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
+curve(p_eta,0,5, n = 1000, xlab = ~eta, ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_w0 <- Vectorize(function(w0){
-  
- tempf <- Vectorize(function(eta) dgamma(w0, shape = 10,
-       scale = 0.1*2*pi/(5*sqrt(abs(eta^2-1))))*dgamma(eta, shape = 4, scale = 0.25))
-
-out <- integrate(tempf,0,Inf)$value
-return(out)
-})
+p_w0 <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
 curve(p_w0,0,5, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_hb <- Vectorize(function(t) dgamma(t, shape = 0.1, scale = 1))
-curve(p_hb,0,0.2, n = 1000, xlab = expression(h_b), ylab = "Prior Density",
+p_hb <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
+curve(p_hb,0,5, n = 1000, xlab = expression(h_b), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 
@@ -427,7 +420,7 @@ par(mfrow = c(1,1))
 
 
 #--------------------------------------------------------------------------------------------------
-# Hazard-Response ODE model for the hazard function: Solver solution
+# Posterior sampling
 #--------------------------------------------------------------------------------------------------
 
 
@@ -592,7 +585,7 @@ fit <- bshazard(Surv(df$time, df$status) ~ 1, data = df, nbin = 100, degree = 3,
 # Predictive hazard plot
 curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard",
       main = "Harmonic Oscillator",
-      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.08))
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.09))
 
 points(tvec,  hCIHOL, col = "gray", type = "l")
 points(tvec,  hCIHOU, col = "gray", type = "l")
@@ -604,7 +597,7 @@ curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard",
 
 # Comparison with Weibull and PGW
 curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.125))
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.1))
 curve(fithw, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
 curve(fithpgw, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
 legend("topleft", legend = c("HO","Weibull", "PGW"), lty = c(1,2,3), 
