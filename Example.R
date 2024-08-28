@@ -226,12 +226,12 @@ legend("topright", legend = c("Harmonic Oscillator","Weibull","PGW","KM"), lty =
 #--------------------------------------------------------------------------------------------------
 
 par(mfrow = c(1,2))
-p_sigmaW <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_sigmaW,0,15, n = 1000, xlab = ~sigma, ylab = "Prior Density", 
+p_sigmaW <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
+curve(p_sigmaW,0,10, n = 1000, xlab = ~sigma, ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_nuW <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_nuW,0,15, n = 1000, xlab = ~nu, ylab = "Prior Density", 
+p_nuW <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
+curve(p_nuW,0,10, n = 1000, xlab = ~nu, ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 
@@ -287,16 +287,16 @@ curve(p_nuW,1.1,1.5, n = 1000, xlab = ~kappa, ylab = "Prior Density",
 #--------------------------------------------------------------------------------------------------
 
 par(mfrow = c(1,3))
-p_sigmaPGW <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_sigmaPGW,0,15, n = 1000, xlab = ~sigma, ylab = "Prior Density", 
+p_sigmaPGW <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
+curve(p_sigmaPGW,0,10, n = 1000, xlab = ~sigma, ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_nuPGW <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_nuPGW,0,15, n = 1000, xlab = ~nu, ylab = "Prior Density", 
+p_nuPGW <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
+curve(p_nuPGW,0,10, n = 1000, xlab = ~nu, ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
-p_gammaPGW <- Vectorize(function(t) dgamma(t, shape = 2, scale = 2))
-curve(p_gammaPGW,0,15, n = 1000, xlab = ~gamma, ylab = "Prior Density", 
+p_gammaPGW <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
+curve(p_gammaPGW,0,10, n = 1000, xlab = ~gamma, ylab = "Prior Density", 
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 par(mfrow = c(1,1))
@@ -358,15 +358,15 @@ curve(p_gammaPGW,0,15, cex.lab = 1.5, lwd = 2, lty = 2, add = TRUE)
 
 par(mfrow = c(2,2))
 p_eta <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
-curve(p_eta,0,5, n = 1000, xlab = ~eta, ylab = "Prior Density",
+curve(p_eta,0,10, n = 1000, xlab = ~eta, ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 p_w0 <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
-curve(p_w0,0,5, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
+curve(p_w0,0,10, n = 1000, xlab = expression(w_0), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 p_hb <- Vectorize(function(t) dgamma(t, shape = 0.001, scale = 1/0.001))
-curve(p_hb,0,5, n = 1000, xlab = expression(h_b), ylab = "Prior Density",
+curve(p_hb,0,10, n = 1000, xlab = expression(h_b), ylab = "Prior Density",
       cex.axis = 1.5, cex.lab = 1.5, lwd = 2, lty = 2)
 
 
@@ -547,13 +547,14 @@ curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard",
 
 
 # Comparison with Weibull and PGW
+#pdf("predhaz.pdf", height = 6, width = 8)
 curve(predhHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Hazard", 
-      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.1))
+      cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,0.11))
 curve(fithw, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
 curve(fithpgw, 0, max(survtimes), lwd= 2, lty = 3, col = "gray", add = TRUE)
 legend("topleft", legend = c("HO","Weibull", "PGW"), lty = c(1,2,3), 
        lwd = c(2,2,2), col = c("black","gray","gray"))
-
+dev.off()
 
 ## --------------------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------------------------------- 
@@ -585,6 +586,7 @@ predsHO <- Vectorize(function(t){
 })
 
 # Comparison: survival functions
+#pdf("predsurv.pdf", height = 6, width = 8)
 curve(predsHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Survival", 
       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,1))
 curve(predsW, 0, max(survtimes), lwd= 2, lty = 2, col = "gray", add = TRUE)
@@ -594,7 +596,7 @@ curve(predsHO, 0, 20, n = 1000, xlab = "Time", ylab = "Predictive Survival",
       cex.axis = 1.5, cex.lab = 1.5, lwd =2, lty = 1, ylim = c(0,1),add=TRUE)
 legend("topright", legend = c("HO","Weibull","PGW","KM"), lty = c(1,2,3,1), 
        lwd = c(2,2,2,2), col = c("black","gray","gray","gray"))
-
+#dev.off()
 
 ## ----message=FALSE---------------------------------------------------------------------------------------------------------------------------------
 
