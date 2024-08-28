@@ -15,12 +15,12 @@ This document provides codes and information about the *Damped Harmonic Oscillat
 
 ## The damped harmonic oscillator model
 
-The harmonic oscillator hazard model is defined through the second order ODE:
+The harmonic oscillator hazard model is defined through the linear second order ODE:
 \begin{equation}
-h''(t) + 2 \eta w_0 h'(t) + w^2_0 (h(t) - h_b) = 0,
+h''(t) + 2 \eta w_0 h'(t) + w^2_0 (h(t) - h_b) = 0; \quad h(0) = h_0, \quad h'(0) = r_0,
 \label{eq:harmonic_osc}    
 \end{equation}
-where $w_0 > 0$ is called the "natural frequency", $\eta >0$ is the "damping coefficient". The resulting model has closed-form hazard and cumulative hazard functions, facilitating likelihood and Bayesian inference on the parameters, as detailed in @christen:2024.
+where $w_0 > 0$ is called the "natural frequency", $\eta >0$ is the "damping coefficient". The shift parameter, $h_b > 0$, represents the stability state or equilibrium level of the solution. The resulting model has closed-form hazard and cumulative hazard functions, facilitating likelihood and Bayesian inference on the parameters, as detailed in @christen:2024.
 
 
 The following R code presents an example from @christen:2024 where we fit the damped harmonic oscillator model to the `rotterdam` data set from the R package `survival`. We present both Likelihood-based and Bayesian analyses.
