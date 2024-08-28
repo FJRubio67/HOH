@@ -75,6 +75,8 @@ serverHO <- function(input, output) {
                       ", r0 = ", input$par5, "),", sep=""),
          xlab = "t", ylab = "h(t)",
          cex.lab = 1.5, cex.axis = 1.5, lwd = 2)
+    abline(h = input$par3, col = "blue", lty = 2, lwd = 2)
+    abline(h = 0, col = "red", lty = 1, lwd = 2)
   })
 }
 
