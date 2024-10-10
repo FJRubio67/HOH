@@ -6,7 +6,8 @@ This repository contains information about the project `HOH`, which concerns the
 
 - The code `appHO.R` produces a shiny app to visualise the shapes of the harmonic oscillator hazard function for different values of the parameters.
 - The code `routinesHO.R` contains the functions required in other codes presented in this repository.
-- The code `Example.R` implements the real data example in Christen and Rubio (2024) (the output of this file is stored in `Example.RData`). The same example is also available in R Markdown in the files `Example.Rmd` and `Example.html`. 
+- The code `Example.R` implements the real data example in Christen and Rubio (2024) (the output of this file is stored in `Example.RData`). The same example is also available in R Markdown in the files `Example.Rmd` and `Example.html`.
+- The code `bound.R` implements the upper bounds presented in the proof of Proposition (2).
 
 See also:
 - [On harmonic oscillator hazard functions](https://rpubs.com/FJRubio/HOH)
