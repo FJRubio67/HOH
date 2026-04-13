@@ -1,6 +1,4 @@
-# HOH
-
-## On Harmonic Oscillator Hazard Functions
+# On Harmonic Oscillator Hazard Functions
 
 ## Overview
 
